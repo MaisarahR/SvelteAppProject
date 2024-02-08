@@ -3,9 +3,10 @@
   import { goto } from '$app/navigation';
   import { authenticateUser } from './../../../utils/auth.js';
   let formErrors = {};
-
+  let clicked = false;
+  
   function postSignUp() {
-    goto('/jobs/new');
+    goto('/jobs/postjob');
   }
 
   async function createUser(evt) {
@@ -16,6 +17,7 @@
       return;
     }
 
+    //get data to send
     const userData = {
       username: evt.target['username'].value,
       email: evt.target['email'].value,
@@ -23,6 +25,7 @@
       passwordConfirm: evt.target['password-confirmation'].value
     };
 
+    //creation part
     const resp = await fetch(PUBLIC_BACKEND_BASE_URL + '/api/collections/users/records', {
       method: 'POST',
       mode: 'cors',
@@ -32,28 +35,27 @@
       body: JSON.stringify(userData)
     });
 
+    //verify that it is correct and log you in
     if (resp.status == 200) {
       const res = await authenticateUser(userData.username, userData.password);
 
       if (res.success) {
         postSignUp();
+        clicked = true;
       } else {
         throw 'Sign up succeeded but authentication failed';
       }
     } else {
       const res = await resp.json();
       formErrors = res.data;
+      clicked = false;
     }
   }
 </script>
 
 
-<html lang="en" data-theme="lofi">
-
 <h1 class="text-center text-xl">Create an Account to Post a Job</h1>
-<div class="text-center">
-    <a class="link-hover italic text-xs" href="/login">Already have an account? Click here to login instead.</a>
-</div>
+
 <div class="flex justify-center items-center mt-8">
     <form on:submit={createUser} class="w-1/3">
         <div class="form-control w-full">
@@ -104,10 +106,22 @@
             {/if}
         </div>
 
-        <div class="form-control w-full mt-4">
+        <!-- <div class="form-control w-full mt-4">
             <button class="btn btn-md">Create an Account</button>
-        </div>
+        </div> -->
+
+        {#if clicked}
+        <button class="btn btn-md w-full mt-4">
+          <span class="loading loading-infinity loading-lg"></span>
+          Loading...
+        </button>
+        {:else}
+        <button class="btn btn-md w-full mt-4">Create an Account</button>
+        {/if}
+
+
+        <div class="text-center">
+          <a class="link-hover text-red-800 italic text-xs" href="/users/login">Already have an account? Click here to login instead.</a>
+      </div>
     </form>
 </div>
-
-</html>

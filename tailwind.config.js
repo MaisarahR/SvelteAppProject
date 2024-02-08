@@ -6,12 +6,12 @@ export default {
     extend: {}
   },
   plugins: [
-    [require("daisyui")],
-    require("daisyui")],
+    require("daisyui"),
+    require("@tailwindcss/typography"),
+  ],
 
   daisyui: {
-    themes: ["lofi", "business"], // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
-    darkTheme: "business", // name of one of the included themes for dark mode
+    themes: ["lofi", "business", "retro"], // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
   },
 };
 

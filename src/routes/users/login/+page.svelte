@@ -1,106 +1,95 @@
 <script>
-  import { PUBLIC_BACKEND_BASE_URL } from '$env/static/public';
+  // import { PUBLIC_BACKEND_BASE_URL } from '$env/static/public';
   import { goto } from '$app/navigation';
   import { authenticateUser } from './../../../utils/auth.js';
-  let formErrors = {};
+  import { loginSuccessAlert, loginFailAlert } from '../../../utils/alert.js';
+  
+  // let username = '';
+  let formErrors = ""; 
+  let clicked = false;
 
-  function postSignUp() {
-    goto('/jobs/new');
+  function postLogin() {
+    goto('/');
   }
 
   async function userLogin(evt) {
-    evt.preventDefault()
+    evt.preventDefault();
+    clicked = true;
 
     const userData = {
-      email: evt.target['email'].value,
+      username: evt.target['username'].value,
       password: evt.target['password'].value,
     };
-
-    const resp = await fetch(PUBLIC_BACKEND_BASE_URL + '/api/collections/users/records', {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(userData)
-    });
-
-    if (resp.status == 200) {
-      const res = await authenticateUser(userData.email, userData.password);
-
-      if (res.success) {
-        userLogin();
-      } else {
-        throw 'Login failed, please check email and password';
-      }
-    } else {
-      const res = await resp.json();
-      formErrors = res.data;
+    
+    const resp = await authenticateUser(userData.username, userData.password);
+    if (resp.success) {
+      loginSuccessAlert();
+      postLogin();
+    } else {     //First 'resp' reading is await authenticateUser, second resp is autenticateUser function res, which links back to auth.js file. 
+      // formErrors = resp.res.message;
+      loginFailAlert();
+      clicked = false;
     }
   }
+
+//Hello part.
+  let sayHello = false;
+    let name = '';
+    function updateSayHello() {
+        if (name !== '') {
+            sayHello = true;
+        }
+    }
+
 </script>
 
+<!-- how to make it appear when only key in data -->
+<h1 class="text-center text-xl">Login to Post a Job</h1> 
+{#if sayHello}
+<h2 class="text-center text-md">Welcome back {name}</h2>
+{/if}
 
-<html lang="en" data-theme="lofi">
 
-<h1 class="text-center text-xl">Login to Post a Job</h1>
-<div class="text-center">
-    <a class="link-hover italic text-xs" href="/login">Don't have an account? Click here to create one.</a>
-</div>
 <div class="flex justify-center items-center mt-8">
     <form on:submit={userLogin} class="w-1/3">
-        <div class="form-control w-full">
-            <label class="label" for="username">
-                <span class="label-text">Username</span> //Here
-            </label>
-            <input type="text" name="username" placeholder="johndoe" class="input input-bordered w-full" />
-            {#if 'username' in formErrors}
-            <label class="label" for="username">
-                <span class="label-text-alt text-red-500">{formErrors['username'].message}</span>
-            </label>
-            {/if}
-        </div>
+      
+      <div class="form-control w-full">
+        <label class="label" for="username">
+          <span class="label-text">Username</span>
+        </label>
+        <input bind:value={name} on:input={updateSayHello} type="text" name="username" placeholder="johndoe" class="input input-bordered w-full" />
+        {#if formErrors}
+        <div class="text-red-500 text-center mt-2">{formErrors}</div>
+        {/if}
+     </div>
 
-        <div class="form-control w-full">
-            <label class="label" for="email">
-                <span class="label-text">Email</span>
-            </label>
-            <input type="email" name="email" placeholder="john@example.com" class="input input-bordered w-full" required />
-            {#if 'email' in formErrors}
-            <label class="label" for="email">
-                <span class="label-text-alt text-red-500">{formErrors['email'].message}</span>
-            </label>
-            {/if}
-        </div>
+      <div class="form-control w-full">
+        <label class="label" for="password">
+            <span class="label-text">Password</span>
+        </label>
+        <input type="password" name="password" placeholder="" class="input input-bordered w-full" required /> 
+        {#if formErrors}
+        <div class="text-red-500 text-center mt-2">{formErrors}</div>
+        {/if}
+      </div>
+<!-- 
+      <div class="form-control w-full mt-4">
+          <button class="btn btn-md">Login to Account</button>
+      </div> -->
 
-        <div class="form-control w-full">
-            <label class="label" for="password">
-                <span class="label-text">Password</span>
-            </label>
-            <input type="password" name="password" placeholder="" class="input input-bordered w-full" required />
-            {#if 'password' in formErrors}
-            <label class="label" for="password">
-                <span class="label-text-alt text-red-500">{formErrors['password'].message}</span>
-            </label>
-            {/if}
-        </div>
+      {#if clicked}
+      <button class="btn btn-md w-full mt-4">
+        <span class="loading loading-infinity loading-lg"></span>
+        Loading...
+      </button>
+      {:else}
+      <button class="btn btn-md w-full mt-4">Login to Account</button>
+      {/if}
 
-        <div class="form-control w-full">
-            <label class="label" for="password">
-                <span class="label-text">Confirm Password</span>
-            </label>
-            <input type="password" name="password-confirmation" placeholder="" class="input input-bordered w-full" required />
-            {#if 'password' in formErrors}
-            <label class="label" for="password">
-                <span class="label-text-alt text-red-500">{formErrors['password'].message}</span>
-            </label>
-            {/if}
-        </div>
-
-        <div class="form-control w-full mt-4">
-            <button class="btn btn-md">Create an Account</button>
-        </div>
+      <div class="text-center">
+        <a class="link-hover text-red-800 italic text-xs"  href="/users/new">Don't have an account? Click here to create one.</a>
+    </div>
     </form>
 </div>
 
-</html>
+
